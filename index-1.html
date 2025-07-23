@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online University - BSIT</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+  <!-- Firebase Setup -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Online University</h1>
+    <p>Self-Paced BSIT Program with Auto Enrollment</p>
+  </header>
+
+  <nav>
+    <a href="#overview">Overview</a>
+    <a href="#apply">Enroll</a>
+    <a href="#login">Login</a>
+    <a href="#tor">Transcript</a>
+    <a href="#diploma">Diploma</a>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <h2>BS Information Technology</h2>
+      <p>This is a 3-year self-paced online degree program designed to equip learners with IT skills.</p>
+    </section>
+
+    <section id="apply">
+      <h2>Apply Now</h2>
+      <form id="enrollForm">
+        <label>Full Name: <input type="text" id="fullName" required /></label><br />
+        <label>Email: <input type="email" id="email" required /></label><br />
+        <label>Password: <input type="password" id="password" required /></label><br />
+        <label>Birthdate: <input type="date" id="birthdate" required /></label><br />
+        <button type="submit">Enroll</button>
+      </form>
+      <div id="enrollSuccess" style="display:none; color: green; margin-top: 10px;">
+        Enrollment successful! You are now a student of BSIT.
+      </div>
+    </section>
+
+    <section id="login">
+      <h2>Student Login</h2>
+      <form id="loginForm">
+        <label>Email: <input type="email" id="loginEmail" required /></label><br />
+        <label>Password: <input type="password" id="loginPassword" required /></label><br />
+        <button type="submit">Login</button>
+      </form>
+      <div id="loginSuccess" style="display:none; color: green; margin-top: 10px;">
+        Login successful! Access granted.
+      </div>
+    </section>
+
+    <section id="tor">
+      <h2>Transcript of Records</h2>
+      <button onclick="printDocument('Transcript of Records')">Print TOR</button>
+    </section>
+
+    <section id="diploma">
+      <h2>Diploma</h2>
+      <button onclick="printDocument('Bachelor of Science in Information Technology Diploma')">Print Diploma</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Online University</p>
+  </footer>
+
+  <script>
+    function printDocument(title) {
+      const win = window.open('', '', 'width=800,height=600');
+      win.document.write(`<html><head><title>${title}</title></head><body><h1>${title}</h1><p>Issued by Online University</p></body></html>`);
+      win.document.close();
+      win.print();
+    }
+
+    document.getElementById('enrollForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const birthdate = document.getElementById('birthdate').value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          return db.collection('students').doc(userCredential.user.uid).set({
+            fullName,
+            email,
+            birthdate,
+            enrolledAt: new Date().toISOString()
+          });
+        })
+        .then(() => {
+          document.getElementById('enrollSuccess').style.display = 'block';
+          document.getElementById('enrollForm').reset();
+        })
+        .catch(error => alert(error.message));
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          document.getElementById('loginSuccess').style.display = 'block';
+          document.getElementById('loginForm').reset();
+        })
+        .catch(error => alert(error.message));
+    });
+  </script>
+</body>
+</html>
